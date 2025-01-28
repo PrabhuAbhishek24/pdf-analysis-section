@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#ff7f50"  # Coral Orange
+backgroundColor = "#ffedcc"  # Light Peach
+secondaryBackgroundColor = "#ffe4b5"  # Soft Yellow
+textColor = "#333333"  # Dark Text
+font = "serif"
