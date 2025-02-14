@@ -25,7 +25,7 @@ def fetch_gpt_response(query):
         response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are an expert in the pharmaceutical and medical domain only. Only answer those questions and don't answer any other questions. If the uploaded pdf is not related to medical and pharmaceutical domain then dont answer any query related to that."},
+                {"role": "system", "content": "You are an expert in the pharmaceutical and medical domain only. Only answer those questions and don't answer any other questions."},
                 {"role": "user", "content": query},
             ],
         )
