@@ -223,62 +223,68 @@ with st.expander("1️⃣ **PDF Analysis Instructions**",expanded=True):
     
 st.header("📄 PDF Analysis")
 
+# Initialize session state
+if "pdf_text" not in st.session_state:
+    st.session_state.pdf_text = ""
+if "pdf_response" not in st.session_state:
+    st.session_state.pdf_response = ""
+
 # Upload PDF
 pdf_file = st.file_uploader("Upload a PDF", type="pdf")
+
 if pdf_file:
-    # Extract text from the uploaded PDF
     with io.BytesIO(pdf_file.read()) as pdf_stream:
         extracted_text = extract_text_from_pdf(pdf_stream)
+        st.session_state.pdf_text = extracted_text
 
-    # Display extracted text
+# Show Extracted Text if available
+if st.session_state.pdf_text:
     st.write("Extracted Text:")
-    st.text_area("PDF Content", extracted_text, height=200)
+    st.text_area("PDF Content", st.session_state.pdf_text, height=200)
 
-    # Input field to ask a question
+    # Ask a question based on the PDF
     query = st.text_input("Ask a question based on the PDF:")
     if query:
-        # Generate GPT response based on the PDF content
-        response = fetch_gpt_response(f"Context: {extracted_text}\nQuestion: {query}")
+        # Only answer questions related to the uploaded PDF
+        full_prompt = (
+            "You are an expert in analyzing PDFs and providing highlights, summaries, analyses, and insights. "
+            "Only answer questions based strictly on the content of the uploaded PDF. "
+            "Do not answer any questions that are unrelated or outside the scope of the PDF.\n\n"
+            f"PDF Content: {st.session_state.pdf_text}\n\n"
+            f"Question: {query}"
+        )
 
-        # Display the generated response
+        # Get response and store in session state
+        st.session_state.pdf_response = fetch_gpt_response(full_prompt)
+
+    # Display the generated response
+    if st.session_state.pdf_response:
         st.subheader("Response")
-        st.write(response)
+        st.write(st.session_state.pdf_response)
 
-        # Display download options
+        # Download Options
         st.subheader("Download Options")
 
-        # Button to download the PDF content and response as a SCORM package
-        scorm_button = st.button("Generate the Response as PDF SCORM Package")
-        if scorm_button:
-            # Only save the response in the SCORM package
-            save_as_scorm_pdf(response)  # Save only the response in PDF
+        if st.button("Generate the Response as PDF SCORM Package"):
+            save_as_scorm_pdf(st.session_state.pdf_response)
             st.success("SCORM package generated. Check the 'Download SCORM Package' button.")
 
         if st.button("Generate the Response as Word SCORM Package"):
-            # Generate the SCORM package for the Word document with only the response
-            scorm_word = save_as_scorm_word(response, file_name="response.docx")
+            scorm_word = save_as_scorm_word(st.session_state.pdf_response, file_name="response.docx")
 
             if scorm_word:
-                # Display success message
                 st.success("SCORM package generated. Click the 'Download SCORM Package' button below.")
-
-                # Display the download button
                 st.download_button(
                     label="Download SCORM Word Package",
                     data=scorm_word,
                     file_name="scorm_word_package.zip",
                     mime="application/zip"
-                    )
+                )
             else:
                 st.error("Failed to generate SCORM Word package.")
-
 
 # Horizontal line
 st.markdown("---")
 
 # Footer
 st.caption("Developed by **Corbin Technology Solutions**")
-
-
-
-    
